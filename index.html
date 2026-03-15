@@ -36,7 +36,9 @@
     font-size: 15px;
     line-height: 1.7;
     overflow-x: hidden;
-    cursor: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    body { cursor: none; }
   }
 
   /* Custom cursor */
@@ -210,7 +212,6 @@
     text-transform: uppercase;
     text-decoration: none;
     border: none;
-    cursor: none;
     transition: transform 0.15s, box-shadow 0.15s;
     clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
   }
@@ -232,7 +233,6 @@
     text-transform: uppercase;
     text-decoration: none;
     border: 1px solid var(--border);
-    cursor: none;
     transition: background 0.2s, border-color 0.2s;
     clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
   }
@@ -584,7 +584,6 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     border: 0.5px solid var(--border-dim);
-    cursor: none;
     transition: color 0.2s, border-color 0.2s, background 0.2s;
     clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
   }
@@ -743,10 +742,7 @@
 
   /* Mobile */
   @media (max-width: 768px) {
-    /* Hide custom cursor on touch devices */
     .cursor, .cursor-ring { display: none; }
-    body { cursor: auto; }
-    a, button { cursor: pointer; }
 
     nav { padding: 1rem 1.25rem; }
     .nav-links { display: none; }

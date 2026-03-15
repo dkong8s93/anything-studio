@@ -37,7 +37,9 @@
     font-size: 15px;
     line-height: 1.7;
     overflow-x: hidden;
-    cursor: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    body { cursor: none; }
   }
 
   /* Custom cursor */
@@ -197,7 +199,6 @@
     text-transform: uppercase;
     text-decoration: none;
     border: none;
-    cursor: none;
     transition: transform 0.15s, box-shadow 0.15s;
     clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
   }
@@ -381,8 +382,6 @@
   /* Mobile */
   @media (max-width: 768px) {
     .cursor, .cursor-ring { display: none; }
-    body { cursor: auto; }
-    a, button { cursor: pointer; }
 
     nav { padding: 1rem 1.25rem; }
     .container { padding: 0 1.25rem; }
