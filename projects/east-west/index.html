@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>East → West — ANYTHING.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #00f5d4;
+    --cyan-dim: rgba(0,245,212,0.15);
+    --cyan-glow: rgba(0,245,212,0.08);
+    --dark: #0d1220;
+    --dark2: #111828;
+    --dark3: #161e30;
+    --border: rgba(0,245,212,0.18);
+    --border-dim: rgba(255,255,255,0.06);
+    --text: #e8f4f8;
+    --text-muted: rgba(232,244,248,0.5);
+    --text-dim: rgba(232,244,248,0.28);
+    --font-display: 'Oxanium', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, opacity 0.2s;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(0,245,212,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.12s ease;
+  }
+
+  /* Canvas background */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid var(--border-dim);
+    background: rgba(13,18,32,0.7);
+    backdrop-filter: blur(16px);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--cyan);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--text-muted); font-weight: 300; }
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--cyan); }
+
+  /* Hero */
+  .hero {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    padding-top: 80px;
+    position: relative;
+  }
+  .hero-inner { padding: 6rem 0 4rem; }
+  .hero-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--cyan);
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .hero-title .hl { color: var(--cyan); }
+  .hero-sub {
+    max-width: 580px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin: 1.75rem 0 2.5rem;
+    border-left: 2px solid var(--border);
+    padding-left: 1.25rem;
+  }
+  .hero-sub strong { color: var(--text); font-weight: 500; }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 2rem;
+    background: var(--cyan);
+    color: var(--dark);
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 32px rgba(0,245,212,0.3);
+  }
+
+  /* Section shared */
+  section {
+    padding: 7rem 0;
+    position: relative;
+    z-index: 2;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 16px; height: 1px;
+    background: var(--cyan);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    max-width: 580px;
+    font-size: 0.9rem;
+    line-height: 1.85;
+  }
+
+  /* How it works */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5px;
+    margin-top: 4rem;
+    background: var(--border-dim);
+    border: 0.5px solid var(--border-dim);
+  }
+  .step {
+    background: var(--dark);
+    padding: 2rem;
+    transition: background 0.3s;
+  }
+  .step:hover { background: var(--dark3); }
+  .step-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--cyan);
+    opacity: 0.12;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .step-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* Feature list */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5px;
+    margin-top: 4rem;
+    background: var(--border-dim);
+    border: 0.5px solid var(--border-dim);
+  }
+  .feature-card {
+    background: var(--dark);
+    padding: 2rem 2.5rem;
+    transition: background 0.3s;
+    position: relative;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--cyan);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .feature-card:hover { background: var(--dark3); }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+  }
+  .feature-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  /* Media placeholder */
+  .media-placeholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--dark2);
+    border: 0.5px solid var(--border-dim);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4rem;
+  }
+  .media-placeholder svg { opacity: 0.3; }
+
+  /* Footer */
+  footer {
+    border-top: 0.5px solid var(--border-dim);
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+    background: var(--dark2);
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--cyan);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .footer-copy {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* Fade-in */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .footer-inner { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Animated background -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Nav -->
+<nav>
+  <a href="../../index.html" class="nav-logo">ANYTHING<span>.</span></a>
+  <a href="../../index.html#work" class="nav-back">← Back to work</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-label fade-in">// 01 — Media & Content</div>
+      <h1 class="hero-title fade-in">East <span class="hl">→</span> West</h1>
+      <p class="hero-sub fade-in">
+        Chinese social platforms surface viral, culturally rich content that Western audiences never see.
+        <strong>We built a pipeline that bridges that gap</strong> — discovering, transforming, and publishing
+        content at scale, with the curator front and center.
+      </p>
+      <div class="hero-actions fade-in">
+        <a href="mailto:dkong8s2017@gmail.com?subject=Interested in East → West" class="btn-primary">I'm interested ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Media -->
+<section style="padding: 0 0 7rem; position: relative; z-index: 2;">
+  <div class="container">
+    <div class="media-placeholder fade-in">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+      </svg>
+      Screenshots &amp; demo coming soon
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section style="background: var(--dark2); border-top: 0.5px solid var(--border-dim); border-bottom: 0.5px solid var(--border-dim);">
+  <div class="container">
+    <div class="section-label fade-in">The pipeline</div>
+    <h2 class="section-title fade-in">From trending in China<br />to published in English.</h2>
+    <p class="section-desc fade-in">A fully automated pipeline — four stages, zero manual bottlenecks.</p>
+
+    <div class="steps-grid fade-in">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Discover</div>
+        <p class="step-desc">Monitors Douyin, Bilibili, Weibo, and Xiaohongshu for trending content using engagement signals and velocity metrics.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Analyze</div>
+        <p class="step-desc">AI extracts key themes, cultural context, and narrative structure. Determines what makes the content resonate and why.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Create</div>
+        <p class="step-desc">Generates original commentary, reaction scripts, and summary narration. Transformative by design — not a repost, a perspective.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Publish</div>
+        <p class="step-desc">Schedules and distributes across YouTube, TikTok, and Instagram Reels. Credits and links the original creator every time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section>
+  <div class="container">
+    <div class="section-label fade-in">Why it works</div>
+    <h2 class="section-title fade-in">Built to be a curator,<br />not a bot farm.</h2>
+
+    <div class="features-grid fade-in">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">Trend Intelligence</div>
+        <p class="feature-desc">Tracks velocity and engagement signals across Chinese platforms to surface content before it peaks — giving the curator a first-mover advantage in the Western market.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✍️</div>
+        <div class="feature-title">Transformative Output</div>
+        <p class="feature-desc">Every piece of content is original commentary, reaction, or summary — not a copy. This is culturally additive and protects under transformative use principles.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <div class="feature-title">Creator Attribution</div>
+        <p class="feature-desc">Original creators are credited and linked in every post. The pipeline treats Chinese creators as collaborators, not sources to extract from.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <div class="feature-title">Persona-First Design</div>
+        <p class="feature-desc">The curator is the brand. The AI is the engine behind the scenes. Audiences follow a trusted human voice, not an automation tool.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">End-to-End Automation</div>
+        <p class="feature-desc">From discovery to publish, the pipeline runs autonomously. The curator reviews and approves — volume and speed without proportional effort.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Performance Feedback Loop</div>
+        <p class="feature-desc">Engagement data feeds back into the discovery model. Over time, the pipeline gets sharper at predicting what Western audiences want to see.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="text-align: center; padding: 8rem 0; position: relative; z-index: 2;">
+  <div class="container">
+    <div class="section-label fade-in" style="justify-content: center;">// Get in touch</div>
+    <h2 class="section-title fade-in" style="font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 1rem;">Interested in<br /><span style="color: var(--cyan);">East → West?</span></h2>
+    <p class="section-desc fade-in" style="margin: 0 auto 2.5rem; text-align: center;">
+      Whether you want to license the pipeline, collaborate, or just learn more — reach out.
+    </p>
+    <div class="fade-in">
+      <a href="mailto:dkong8s2017@gmail.com?subject=Interested in East → West" class="btn-primary">Drop us a message ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <a href="../../index.html" class="footer-logo">ANYTHING.</a>
+      <div class="footer-copy">© 2025 Anything. · David · Lu Zou · Jason Li</div>
+      <div class="footer-copy" style="font-size:0.65rem; opacity:0.5;">Built with AI. Deployed with intent.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animCursor() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+})();
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '12px'; cursor.style.height = '12px'; ring.style.width = '48px'; ring.style.height = '48px'; ring.style.borderColor = 'rgba(0,245,212,0.8)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; ring.style.width = '32px'; ring.style.height = '32px'; ring.style.borderColor = 'rgba(0,245,212,0.5)'; });
+});
+
+// Canvas grid
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const GRID = 60;
+let t = 0;
+function drawBg() {
+  ctx.clearRect(0, 0, W, H);
+  t += 0.003;
+  ctx.strokeStyle = 'rgba(0,245,212,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += GRID) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += GRID) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  for (let x = 0; x < W; x += GRID) {
+    for (let y = 0; y < H; y += GRID) {
+      const pulse = Math.sin(t + x * 0.02 + y * 0.015) * 0.5 + 0.5;
+      if (pulse > 0.88) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,245,212,${0.15 + pulse * 0.35})`;
+        ctx.fill();
+      }
+    }
+  }
+  for (let i = 0; i < 4; i++) {
+    const x = ((t * 60 * (i + 1) * 17) % W + W) % W;
+    const grad = ctx.createLinearGradient(x, 0, x, H * 0.6);
+    grad.addColorStop(0, 'rgba(0,245,212,0)');
+    grad.addColorStop(0.4, 'rgba(0,245,212,0.08)');
+    grad.addColorStop(1, 'rgba(0,245,212,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 0.75;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H * 0.6); ctx.stroke();
+  }
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// Fade-in on scroll
+const faders = document.querySelectorAll('.fade-in');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), 80 * i);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+faders.forEach(f => obs.observe(f));
+</script>
+</body>
+</html>
