@@ -742,12 +742,38 @@
   }
 
   /* Mobile */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
+    /* Hide custom cursor on touch devices */
+    .cursor, .cursor-ring { display: none; }
+    body { cursor: auto; }
+    a, button { cursor: pointer; }
+
+    nav { padding: 1rem 1.25rem; }
     .nav-links { display: none; }
-    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+
+    .container { padding: 0 1.25rem; }
+
+    section { padding: 4rem 0; }
+
+    .hero-inner { padding: 4rem 0 2.5rem; }
+    .hero-stats { gap: 1.5rem; flex-wrap: wrap; margin-top: 3rem; padding-top: 2rem; }
+
     .team-grid { grid-template-columns: 1fr; }
+    .work-grid { grid-template-columns: 1fr; }
     .process-grid { grid-template-columns: 1fr 1fr; }
+
+    .work-card-footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .btn-interest { width: 100%; justify-content: center; }
+
+    .hero-actions { flex-direction: column; align-items: flex-start; }
+    .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+
     .footer-inner { flex-direction: column; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    .process-grid { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: 1fr 1fr; display: grid; }
   }
 </style>
 </head>
