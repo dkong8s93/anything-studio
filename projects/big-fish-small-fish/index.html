@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Big Fish, Small Fish — ANYTHING.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sky: #c8eeff;
+    --ocean: #3cc6e8;
+    --deep: #0c7ba6;
+    --coral: #ff7eb9;
+    --orange: #ff9850;
+    --sun: #ffcb3a;
+    --mint: #66e0b3;
+    --danger: #ff6f6f;
+    --warn: #ffcb3a;
+    --safe: #66e0b3;
+    --ink: #073147;
+    --ink-soft: rgba(7,49,71,0.65);
+    --ink-dim: rgba(7,49,71,0.4);
+    --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+    --font-body: 'Nunito', system-ui, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--deep);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  #game {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #c8eeff 0%, #6cd0e8 40%, #1fa0c9 75%, #0a6f95 100%);
+    cursor: none;
+  }
+
+  /* HUD */
+  .hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .hud-panel {
+    background: rgba(255,255,255,0.78);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255,255,255,0.9);
+    padding: 0.75rem 1.1rem;
+    min-width: 200px;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(7,49,71,0.18);
+  }
+
+  .hud-label {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 0.3rem;
+  }
+
+  .hud-value {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .hud-sub {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-top: 0.3rem;
+  }
+
+  .size-bar {
+    margin-top: 0.6rem;
+    width: 100%;
+    height: 6px;
+    background: rgba(7,49,71,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .size-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--sun), var(--coral));
+    width: 10%;
+    transition: width 0.25s ease;
+    box-shadow: 0 0 10px rgba(255,203,58,0.55);
+  }
+
+  .brand {
+    position: absolute;
+    bottom: 0.9rem;
+    left: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    z-index: 5;
+    pointer-events: auto;
+  }
+  .brand a {
+    color: white;
+    text-decoration: none;
+    background: rgba(7,49,71,0.28);
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .brand a:hover { background: rgba(7,49,71,0.5); transform: translateY(-2px); }
+
+  /* Overlays */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255,248,232,0.78) 0%, rgba(108,208,232,0.82) 60%, rgba(31,160,201,0.85) 100%);
+    z-index: 10;
+    backdrop-filter: blur(6px);
+    transition: opacity 0.4s ease;
+  }
+  .overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .overlay-eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.7);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(255,126,185,0.25);
+  }
+
+  .overlay-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 9vw, 5.5rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 0.98;
+    margin-bottom: 1.1rem;
+    color: var(--ink);
+  }
+  .overlay-title .hl {
+    background: linear-gradient(90deg, var(--coral), var(--orange), var(--sun));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .overlay-title .danger {
+    background: linear-gradient(90deg, var(--coral), var(--danger));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .overlay-sub {
+    max-width: 540px;
+    color: var(--ink-soft);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+  }
+  .overlay-sub strong { color: var(--coral); font-weight: 700; }
+
+  .legend {
+    display: flex;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: rgba(255,255,255,0.75);
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(7,49,71,0.08);
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2.4rem;
+    background: linear-gradient(135deg, var(--coral), var(--orange));
+    color: white;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 10px 26px rgba(255,126,185,0.45);
+    pointer-events: auto;
+  }
+  .btn:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(255,126,185,0.55); }
+  .btn:active { transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--coral);
+    border: 2px solid var(--coral);
+    box-shadow: 0 6px 16px rgba(7,49,71,0.1);
+    margin-left: 0.75rem;
+  }
+  .btn-secondary:hover {
+    background: var(--coral);
+    color: white;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat-block {
+    background: rgba(255,255,255,0.78);
+    padding: 1rem 1.5rem;
+    border-radius: 22px;
+    box-shadow: 0 6px 18px rgba(7,49,71,0.1);
+    min-width: 120px;
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--coral);
+    line-height: 1;
+  }
+  .stat-lab {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  /* Custom cursor */
+  .cur {
+    position: fixed;
+    width: 16px; height: 16px;
+    border: 2.5px solid var(--coral);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    background: rgba(255,255,255,0.4);
+    box-shadow: 0 2px 8px rgba(255,126,185,0.35);
+  }
+
+  @media (max-width: 600px) {
+    .hud { padding: 0.6rem; gap: 0.5rem; }
+    .hud-panel { min-width: 0; padding: 0.55rem 0.75rem; }
+    .hud-value { font-size: 1rem; }
+    .hud-label { font-size: 0.55rem; }
+    .cur { display: none; }
+    .brand { font-size: 0.55rem; }
+    .legend { gap: 0.75rem; }
+    .legend-item { font-size: 0.6rem; }
+    .btn-secondary { margin-left: 0; margin-top: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-panel">
+      <div class="hud-label">Your size</div>
+      <div class="hud-value" id="size-val">2.0</div>
+      <div class="size-bar"><div class="size-fill" id="size-fill"></div></div>
+    </div>
+    <div class="hud-panel" style="text-align:right">
+      <div class="hud-label">Eaten</div>
+      <div class="hud-value" id="eaten-val">0</div>
+      <div class="hud-sub" id="biggest-val">Biggest threat: —</div>
+    </div>
+  </div>
+
+  <div class="brand">
+    <a href="../../index.html">← ANYTHING.</a>
+  </div>
+
+  <!-- Custom cursor -->
+  <div class="cur" id="cur"></div>
+
+  <!-- Start overlay -->
+  <div class="overlay" id="overlay-start">
+    <div class="overlay-eyebrow">Sunny ocean arcade</div>
+    <h1 class="overlay-title">Big Fish,<br /><span class="hl">Small Fish.</span></h1>
+    <p class="overlay-sub">
+      Steer with your mouse. Eat anything smaller than you to grow.
+      Avoid anything bigger — it eats you.
+      Reach <strong>size 10</strong> to rule the sea.
+    </p>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--safe); color:var(--safe)"></span>Edible</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--warn); color:var(--warn)"></span>Too close</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--danger); color:var(--danger)"></span>Danger</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--orange); color:var(--orange)"></span>You</div>
+    </div>
+    <div>
+      <button class="btn" id="btn-start">Dive In ↓</button>
+    </div>
+  </div>
+
+  <!-- Game over -->
+  <div class="overlay hidden" id="overlay-lose">
+    <div class="overlay-eyebrow">Chomp!</div>
+    <h1 class="overlay-title">You got<br /><span class="danger">gobbled.</span></h1>
+    <div class="stats-row">
+      <div class="stat-block">
+        <div class="stat-num" id="lose-size">0</div>
+        <div class="stat-lab">Final size</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" id="lose-eaten">0</div>
+        <div class="stat-lab">Fish eaten</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" id="lose-time">0s</div>
+        <div class="stat-lab">Survived</div>
+      </div>
+    </div>
+    <div>
+      <button class="btn" id="btn-retry">Try again ↻</button>
+      <a href="../../index.html" class="btn btn-secondary">Exit</a>
+    </div>
+  </div>
+
+  <!-- Win -->
+  <div class="overlay hidden" id="overlay-win">
+    <div class="overlay-eyebrow">Ruler of the reef!</div>
+    <h1 class="overlay-title">You rule the<br /><span class="hl">ocean!</span></h1>
+    <p class="overlay-sub">
+      Nothing left to fear — every shadow in these waters is prey now.
+    </p>
+    <div class="stats-row">
+      <div class="stat-block">
+        <div class="stat-num" id="win-eaten">0</div>
+        <div class="stat-lab">Fish eaten</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num" id="win-time">0s</div>
+        <div class="stat-lab">Time to apex</div>
+      </div>
+    </div>
+    <div>
+      <button class="btn" id="btn-again">Play again ↻</button>
+      <a href="../../index.html" class="btn btn-secondary">Exit</a>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const cur = document.getElementById('cur');
+
+  const sizeValEl   = document.getElementById('size-val');
+  const sizeFillEl  = document.getElementById('size-fill');
+  const eatenValEl  = document.getElementById('eaten-val');
+  const biggestEl   = document.getElementById('biggest-val');
+
+  const overlayStart = document.getElementById('overlay-start');
+  const overlayLose  = document.getElementById('overlay-lose');
+  const overlayWin   = document.getElementById('overlay-win');
+  const btnStart = document.getElementById('btn-start');
+  const btnRetry = document.getElementById('btn-retry');
+  const btnAgain = document.getElementById('btn-again');
+
+  // ---- Config ----
+  const MAX_SIZE = 10;              // player wins at this size
+  const WORLD_PAD = 80;             // spawn margin outside view
+  const TARGET_FISH = 28;           // how many fish to keep in the sea
+  const PLAYER_START_SIZE = 2.0;
+  const EAT_RATIO = 0.9;            // must be this fraction or smaller to be eaten
+  const DANGER_RATIO = 1.1;         // bigger than this eats you
+
+  // ---- State ----
+  let W = 0, H = 0, DPR = 1;
+  let state = 'start';              // start | play | lose | win
+  let last = 0;
+  let elapsed = 0;
+  let eatenCount = 0;
+
+  let mouse = { x: 0, y: 0, inside: false };
+
+  const fishes = [];
+  const bubbles = [];
+  const particles = [];
+
+  let player = null;
+
+  // ---- Helpers ----
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const randInt = (a, b) => Math.floor(rand(a, b + 1));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const sizeToRadius = s => 9 + s * 2.6;  // size 1 -> 11.6px, size 20 -> 61px
+
+  // ---- Resize ----
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---- Input ----
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.inside = true;
+    cur.style.left = e.clientX + 'px';
+    cur.style.top = e.clientY + 'px';
+  });
+  window.addEventListener('mouseleave', () => { mouse.inside = false; });
+  window.addEventListener('mouseenter', () => { mouse.inside = true; });
+
+  // Touch
+  function onTouch(e) {
+    if (e.touches && e.touches.length > 0) {
+      mouse.x = e.touches[0].clientX;
+      mouse.y = e.touches[0].clientY;
+      mouse.inside = true;
+      if (state === 'play' && e.target === canvas) e.preventDefault();
+    }
+  }
+  function onTouchEnd(e) {
+    if (!e.touches || e.touches.length === 0) mouse.inside = false;
+  }
+  window.addEventListener('touchstart', onTouch, { passive: false });
+  window.addEventListener('touchmove', onTouch, { passive: false });
+  window.addEventListener('touchend', onTouchEnd);
+  window.addEventListener('touchcancel', onTouchEnd);
+
+  // ---- Fish ----
+  function makeFish(size, x, y, opts = {}) {
+    const speed = (2.2 - size * 0.06) * rand(0.7, 1.15);   // smaller fish faster
+    const dir = rand(0, Math.PI * 2);
+    return {
+      x, y,
+      vx: Math.cos(dir) * speed,
+      vy: Math.sin(dir) * speed,
+      size,
+      baseSpeed: Math.max(0.5, speed),
+      color: opts.color || pickFishTint(size),
+      wiggle: rand(0, Math.PI * 2),
+      wiggleSpeed: rand(6, 12),
+      changeAt: performance.now() + rand(600, 2200),
+      isPlayer: !!opts.isPlayer,
+    };
+  }
+
+  function pickFishTint(size) {
+    // Bright, cheerful rainbow palette so the ocean feels full of life.
+    const hues = [340, 10, 30, 50, 90, 160, 195, 230, 275, 315];
+    const hue = hues[Math.floor(Math.random() * hues.length)];
+    const sat = 72 + Math.random() * 18;
+    const lum = 58 + Math.random() * 8;
+    return `hsl(${hue}, ${sat.toFixed(0)}%, ${lum.toFixed(0)}%)`;
+  }
+
+  // Pick a spawn size weighted heavily toward "one size smaller" edible prey,
+  // with a thinner layer of similar-sized and dangerous fish.
+  function pickSpawnSize(playerSize) {
+    const roll = Math.random();
+    if (roll < 0.70) {
+      // edible — clustered ~1 size below the player
+      const target = Math.max(0.6, playerSize - 1);
+      return clamp(rand(target - 0.4, target + 0.4), 0.5, Math.max(0.7, playerSize * 0.88));
+    } else if (roll < 0.85) {
+      // similar — close to player, mild threat either way
+      return clamp(rand(playerSize * 0.88, playerSize * 1.1), 0.7, MAX_SIZE);
+    } else {
+      // dangerous — capped at MAX_SIZE, but narrower/closer to player
+      return clamp(rand(playerSize * 1.15, Math.min(MAX_SIZE, playerSize * 1.6 + 1)), 1, MAX_SIZE);
+    }
+  }
+
+  function spawnEdgeFish() {
+    const playerSize = player ? player.size : PLAYER_START_SIZE;
+    const size = pickSpawnSize(playerSize);
+
+    // Pick an edge off-screen
+    const side = randInt(0, 3);
+    let x, y;
+    if (side === 0)       { x = -WORLD_PAD;   y = rand(0, H); }
+    else if (side === 1)  { x = W + WORLD_PAD; y = rand(0, H); }
+    else if (side === 2)  { x = rand(0, W);   y = -WORLD_PAD; }
+    else                  { x = rand(0, W);   y = H + WORLD_PAD; }
+
+    const f = makeFish(size, x, y);
+    // Aim them roughly toward the interior
+    const aimX = rand(W * 0.2, W * 0.8);
+    const aimY = rand(H * 0.2, H * 0.8);
+    const dx = aimX - x, dy = aimY - y;
+    const d = Math.hypot(dx, dy) || 1;
+    f.vx = (dx / d) * f.baseSpeed;
+    f.vy = (dy / d) * f.baseSpeed;
+    fishes.push(f);
+  }
+
+  function initFishes() {
+    fishes.length = 0;
+    const playerSize = player ? player.size : PLAYER_START_SIZE;
+    let tries = 0;
+    while (fishes.length < TARGET_FISH && tries < 400) {
+      tries++;
+      const x = rand(0, W), y = rand(0, H);
+      if (Math.hypot(x - W/2, y - H/2) < 120) continue;
+      fishes.push(makeFish(pickSpawnSize(playerSize), x, y));
+    }
+  }
+
+  // ---- Drawing ----
+  function drawFish(f, now) {
+    const r = sizeToRadius(f.size);
+    const vx = f.vx, vy = f.vy;
+    const speed = Math.hypot(vx, vy) || 0.0001;
+    const angle = Math.atan2(vy, vx);
+    const facingLeft = Math.cos(angle) < 0;
+
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.rotate(angle);
+    if (facingLeft) ctx.scale(1, -1); // keeps eye on top regardless of direction
+
+    // Wiggle
+    const wig = Math.sin(f.wiggle) * (r * 0.12);
+
+    // Glow for player
+    if (f.isPlayer) {
+      ctx.shadowColor = 'rgba(255,152,80,0.65)';
+      ctx.shadowBlur = 24;
+    }
+
+    // Tail
+    const tailLen = r * 1.15;
+    ctx.fillStyle = f.color;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.75, wig);
+    ctx.lineTo(-r * 0.75 - tailLen, -r * 0.55 + wig * 0.6);
+    ctx.lineTo(-r * 0.75 - tailLen, r * 0.55 + wig * 0.6);
+    ctx.closePath();
+    ctx.fill();
+
+    // Body
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r, r * 0.62, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Belly highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.22, r * 0.9, r * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Side fin
+    ctx.fillStyle = `rgba(0,0,0,0.18)`;
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.35, r * 0.35, r * 0.18, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye
+    const eyeX = r * 0.45;
+    const eyeY = -r * 0.18;
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(eyeX, eyeY, Math.max(1.5, r * 0.14), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#081018';
+    ctx.beginPath();
+    ctx.arc(eyeX + r * 0.03, eyeY, Math.max(1, r * 0.075), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // Outline / threat ring (in world coords, no rotation needed)
+    if (!f.isPlayer && player && state === 'play') {
+      const relation = sizeRelation(player.size, f.size);
+      let ringColor = null;
+      if (relation === 'danger') ringColor = 'rgba(255,111,111,0.6)';
+      else if (relation === 'warn') ringColor = 'rgba(255,203,58,0.55)';
+      else if (relation === 'safe') ringColor = 'rgba(102,224,179,0.45)';
+      if (ringColor) {
+        ctx.strokeStyle = ringColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, r + 3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function sizeRelation(mySize, otherSize) {
+    if (otherSize < mySize * EAT_RATIO) return 'safe';
+    if (otherSize > mySize * DANGER_RATIO) return 'danger';
+    return 'warn';
+  }
+
+  // ---- Bubbles (decorative) ----
+  function spawnBubble() {
+    bubbles.push({
+      x: rand(0, W),
+      y: H + rand(0, 40),
+      r: rand(1, 4),
+      vy: -rand(0.3, 1.1),
+      vx: rand(-0.15, 0.15),
+      life: 1,
+    });
+  }
+  function updateBubbles(dt) {
+    if (Math.random() < 0.4 && bubbles.length < 500) spawnBubble();
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      if (b.y < -10) bubbles.splice(i, 1);
+    }
+  }
+  function drawBubbles() {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    for (const b of bubbles) {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ---- Particles (eat effect) ----
+  function spawnEatBurst(x, y, color) {
+    for (let i = 0; i < 14; i++) {
+      const a = rand(0, Math.PI * 2);
+      const s = rand(1, 3.5);
+      particles.push({
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: rand(0.4, 0.9),
+        age: 0,
+        r: rand(1.5, 3),
+        color,
+      });
+    }
+  }
+  function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.age += dt;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.94;
+      p.vy *= 0.94;
+      if (p.age > p.life) particles.splice(i, 1);
+    }
+  }
+  function drawParticles() {
+    for (const p of particles) {
+      const alpha = 1 - (p.age / p.life);
+      ctx.globalAlpha = Math.max(0, alpha);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- Water caustics (cheap) ----
+  let causticT = 0;
+  function drawCaustics(dt) {
+    causticT += dt * 0.3;
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = '#fff8e8';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const y = (H * 0.12 * i) + Math.sin(causticT + i) * 20;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 30) {
+        const yy = y + Math.sin(x * 0.015 + causticT * 2 + i) * 14;
+        if (x === 0) ctx.moveTo(x, yy);
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ---- Gameplay update ----
+  function updatePlayer(dt) {
+    if (!player) return;
+    const r = sizeToRadius(player.size);
+
+    // Target mouse if inside, else hold position
+    let tx = mouse.inside ? mouse.x : player.x;
+    let ty = mouse.inside ? mouse.y : player.y;
+
+    const dx = tx - player.x;
+    const dy = ty - player.y;
+    const dist = Math.hypot(dx, dy);
+
+    // Max speed decreases slightly as you grow
+    const maxSpeed = clamp(6.5 - player.size * 0.12, 2.6, 6.5);
+    // Approach speed scales with distance
+    const approach = clamp(dist * 0.12, 0, maxSpeed);
+
+    if (dist > 0.5) {
+      const nx = dx / dist, ny = dy / dist;
+      // Smoothly adjust velocity toward desired
+      const desiredVx = nx * approach;
+      const desiredVy = ny * approach;
+      player.vx += (desiredVx - player.vx) * 0.18;
+      player.vy += (desiredVy - player.vy) * 0.18;
+    } else {
+      player.vx *= 0.9;
+      player.vy *= 0.9;
+    }
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    // Keep in bounds
+    player.x = clamp(player.x, r, W - r);
+    player.y = clamp(player.y, r, H - r);
+
+    // Wiggle scaled by speed
+    const sp = Math.hypot(player.vx, player.vy);
+    player.wiggle += dt * (6 + sp * 1.2);
+  }
+
+  function updateFishes(dt) {
+    const now = performance.now();
+    for (let i = fishes.length - 1; i >= 0; i--) {
+      const f = fishes[i];
+      const r = sizeToRadius(f.size);
+
+      // AI: occasional direction changes + simple react to player
+      if (now > f.changeAt) {
+        const ang = Math.atan2(f.vy, f.vx) + rand(-0.8, 0.8);
+        f.vx = Math.cos(ang) * f.baseSpeed;
+        f.vy = Math.sin(ang) * f.baseSpeed;
+        f.changeAt = now + rand(700, 2400);
+      }
+
+      if (player) {
+        const dx = f.x - player.x;
+        const dy = f.y - player.y;
+        const d = Math.hypot(dx, dy) || 0.001;
+        const senseR = 220 + f.size * 8;
+        if (d < senseR) {
+          const nx = dx / d, ny = dy / d;
+          if (f.size < player.size * EAT_RATIO) {
+            // flee
+            const flee = clamp(1 - d / senseR, 0, 1) * 0.35;
+            f.vx += nx * flee;
+            f.vy += ny * flee;
+          } else if (f.size > player.size * DANGER_RATIO) {
+            // chase
+            const chase = clamp(1 - d / (senseR * 1.3), 0, 1) * 0.12;
+            f.vx -= nx * chase;
+            f.vy -= ny * chase;
+          }
+        }
+      }
+
+      // Clamp speed
+      const sp = Math.hypot(f.vx, f.vy);
+      const maxSp = f.baseSpeed * 1.6;
+      if (sp > maxSp) {
+        f.vx = (f.vx / sp) * maxSp;
+        f.vy = (f.vy / sp) * maxSp;
+      }
+
+      f.x += f.vx;
+      f.y += f.vy;
+      f.wiggle += dt * f.wiggleSpeed;
+
+      // Despawn well off-screen
+      if (f.x < -WORLD_PAD * 3 || f.x > W + WORLD_PAD * 3 || f.y < -WORLD_PAD * 3 || f.y > H + WORLD_PAD * 3) {
+        fishes.splice(i, 1);
+        continue;
+      }
+    }
+
+    // Maintain population
+    while (fishes.length < TARGET_FISH) spawnEdgeFish();
+  }
+
+  function handleCollisions() {
+    if (!player || state !== 'play') return;
+    const pr = sizeToRadius(player.size);
+    for (let i = fishes.length - 1; i >= 0; i--) {
+      const f = fishes[i];
+      const fr = sizeToRadius(f.size);
+      const dx = f.x - player.x;
+      const dy = f.y - player.y;
+      const d = Math.hypot(dx, dy);
+      if (d < pr + fr - Math.min(pr, fr) * 0.2) {
+        if (f.size < player.size * EAT_RATIO) {
+          // Eat it
+          const gained = f.size * f.size * 0.35;
+          const newArea = (player.size * player.size) + gained;
+          player.size = Math.min(MAX_SIZE, Math.sqrt(newArea));
+          eatenCount++;
+          spawnEatBurst(f.x, f.y, f.color);
+          fishes.splice(i, 1);
+          if (player.size >= MAX_SIZE) {
+            winGame();
+            return;
+          }
+        } else if (f.size > player.size * DANGER_RATIO) {
+          // Eaten
+          spawnEatBurst(player.x, player.y, '#ff9850');
+          loseGame();
+          return;
+        } else {
+          // Similar size — bounce apart a bit so we don't deadlock overlap
+          if (d > 0.001) {
+            const nx = dx / d, ny = dy / d;
+            const push = 0.6;
+            player.vx -= nx * push;
+            player.vy -= ny * push;
+            f.vx += nx * push;
+            f.vy += ny * push;
+          }
+        }
+      }
+    }
+  }
+
+  // ---- HUD ----
+  function updateHUD() {
+    if (!player) return;
+    sizeValEl.textContent = player.size.toFixed(1);
+    sizeFillEl.style.width = (clamp(player.size / MAX_SIZE, 0, 1) * 100).toFixed(0) + '%';
+    eatenValEl.textContent = eatenCount;
+
+    const dangerMin = player.size * DANGER_RATIO;
+    let biggestThreat = 0;
+    for (const f of fishes) {
+      if (f.size > dangerMin && f.size > biggestThreat) biggestThreat = f.size;
+    }
+    biggestEl.textContent = biggestThreat > 0
+      ? `Biggest threat: ${biggestThreat.toFixed(1)}`
+      : 'Biggest threat: none';
+  }
+
+  // ---- Game lifecycle ----
+  function startGame() {
+    state = 'play';
+    eatenCount = 0;
+    elapsed = 0;
+    particles.length = 0;
+    bubbles.length = 0;
+    player = makeFish(PLAYER_START_SIZE, W / 2, H / 2, { isPlayer: true, color: '#ff9850' });
+    player.baseSpeed = 4;
+    initFishes();
+    overlayStart.classList.add('hidden');
+    overlayLose.classList.add('hidden');
+    overlayWin.classList.add('hidden');
+  }
+
+  function loseGame() {
+    state = 'lose';
+    document.getElementById('lose-size').textContent = player.size.toFixed(1);
+    document.getElementById('lose-eaten').textContent = eatenCount;
+    document.getElementById('lose-time').textContent = (elapsed / 1000).toFixed(0) + 's';
+    overlayLose.classList.remove('hidden');
+  }
+
+  function winGame() {
+    state = 'win';
+    document.getElementById('win-eaten').textContent = eatenCount;
+    document.getElementById('win-time').textContent = (elapsed / 1000).toFixed(0) + 's';
+    overlayWin.classList.remove('hidden');
+  }
+
+  btnStart.addEventListener('click', startGame);
+  btnRetry.addEventListener('click', startGame);
+  btnAgain.addEventListener('click', startGame);
+
+  // Space/enter to start/restart too. Skip if a button has focus —
+  // the browser will synthesize its own click, so we'd double-fire startGame.
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      const t = e.target;
+      if (t && (t.tagName === 'BUTTON' || t.tagName === 'A')) return;
+      if (state === 'start' || state === 'lose' || state === 'win') {
+        e.preventDefault();
+        startGame();
+      }
+    }
+  });
+
+  // ---- Main loop ----
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+    last = now;
+    if (state === 'play') elapsed += dt * 1000;
+
+    // Background
+    ctx.clearRect(0, 0, W, H);
+
+    // Caustics in background
+    drawCaustics(dt);
+
+    // Decorative bubbles
+    updateBubbles(dt);
+    drawBubbles();
+
+    if (state === 'play') {
+      updatePlayer(dt);
+      updateFishes(dt);
+      handleCollisions();
+    } else {
+      // Keep fish gently moving on menus
+      updateFishes(dt);
+    }
+
+    updateParticles(dt);
+
+    // Draw all fish sorted by size (bigger behind-ish for a cleaner look)
+    const sorted = fishes.slice().sort((a, b) => b.size - a.size);
+    for (const f of sorted) drawFish(f, now);
+    if (player) drawFish(player, now);
+
+    drawParticles();
+
+    if (state === 'play') updateHUD();
+
+    requestAnimationFrame(frame);
+  }
+
+  // Pre-populate a calm scene for the start screen
+  (function initIdle() {
+    for (let i = 0; i < TARGET_FISH; i++) {
+      const size = rand(1, 8);
+      fishes.push(makeFish(size, rand(0, W), rand(0, H)));
+    }
+  })();
+
+  requestAnimationFrame(now => { last = now; requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
