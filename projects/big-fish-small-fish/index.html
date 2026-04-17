@@ -869,7 +869,7 @@
       if (d < pr + fr - Math.min(pr, fr) * 0.2) {
         if (f.size < player.size * EAT_RATIO) {
           // Eat it
-          const gained = f.size * f.size * 0.35;
+          const gained = f.size * f.size * 0.70;
           const newArea = (player.size * player.size) + gained;
           player.size = Math.min(MAX_SIZE, Math.sqrt(newArea));
           eatenCount++;
