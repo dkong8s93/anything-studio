@@ -1,0 +1,193 @@
+═══════════════════════════════════════════════
+DESIGN OVERRIDE — MUTED PASTEL STYLE
+Apply these changes to the full visual design of the game.
+All previous layout, mechanics, and code quality instructions
+remain unchanged. Only the visual treatment changes.
+═══════════════════════════════════════════════
+
+PHILOSOPHY
+──────────────────────────────────────────────
+The overall mood is soft, airy, and hand-crafted — like a
+watercolor sketchbook. Nothing should feel harsh, neon, or
+high-contrast. Colors are desaturated and warm. Shadows are
+gentle. Glows are whisper-light. The game should feel calm
+to look at even when it's cognitively intense to play.
+Think: Ghibli color palette meets minimal indie game UI.
+
+BACKGROUND COLORS
+──────────────────────────────────────────────
+- LEFT panel background:  #e8e0f0  (dusty lavender)
+- RIGHT panel background: #dff0e8  (sage mint)
+- Top score bar:          #f5f0fa  (near-white lavender)
+  with a 1px bottom border in #d4cce0
+- Dividing line:          #b8aed0  (muted mauve), 2px,
+  NO glow. On level-up, briefly brighten to #c9bfe0.
+
+PLAYER SHAPES
+──────────────────────────────────────────────
+LEFT square:
+  Fill:        #c084b8  (dusty rose-purple)
+  Glow:        shadowBlur 14, shadowColor #d4a8cc, opacity 0.6
+  Stroke:      1px #a06898
+
+RIGHT circle:
+  Fill:        #6bac8a  (muted sage green)
+  Glow:        shadowBlur 14, shadowColor #90c4a8, opacity 0.6
+  Stroke:      1px #4e8c6c
+
+On hit/death flash: briefly shift fill to #e07070 (soft coral red)
+instead of harsh red.
+
+OBSTACLES
+──────────────────────────────────────────────
+Left panel obstacles (vertical bars):
+  Fill:        #a0b4d8  (powder blue)
+  Opacity:     0.7
+  Glow:        shadowBlur 6, shadowColor #b8c8e8
+
+Right panel obstacles (horizontal bars):
+  Fill:        #d4a96a  (warm sand)
+  Opacity:     0.7
+  Glow:        shadowBlur 6, shadowColor #e0c090
+
+Gap arrows inside obstacles:
+  Color:       #ffffff, opacity 0.35
+  (keep them subtle — just a whisper of direction)
+
+PARTICLES
+──────────────────────────────────────────────
+Square gap-pass sparks:   #d4a0c8  (soft mauve pink)
+Circle gap-pass sparks:   #80c49a  (soft sage)
+Death burst particles:    #e0a0a0  (soft coral)
+All particles:            start opacity 0.9, fade to 0 over 500ms
+                          radius 3px, no glow
+
+TYPOGRAPHY
+──────────────────────────────────────────────
+Font:          "Nunito" from Google Fonts (rounded, soft).
+               Fallback: system-ui.
+               Import weight 400, 600, 800.
+
+All text:      avoid pure black. Use #4a4260 (muted dark purple)
+               as the primary text color throughout.
+
+Score / level labels:  #6b5e80, font-weight 600, font-size 15px
+Panel key labels:      #9e93b0, font-weight 400, font-size 13px,
+                       letter-spacing 0.05em
+
+BACKGROUND AMBIENT DOTS
+──────────────────────────────────────────────
+Left panel dots:   #b09cc0, opacity 0.08, radius 3px
+Right panel dots:  #88b89c, opacity 0.08, radius 3px
+(Keep the slow drift behavior from the original spec)
+
+START SCREEN
+──────────────────────────────────────────────
+- Background: a soft gradient from #ede8f5 (top) to #e2eeea (bottom),
+  covering the full viewport.
+- Title "DUAL BRAIN":
+    "DUAL"  — #c084b8  (dusty rose-purple)  font-size 72px, weight 800
+    "BRAIN" — #6bac8a  (muted sage green)   font-size 72px, weight 800
+    Letter-spacing: 0.06em. No glow. No shadow.
+- Subtitle "One mind. Two problems. Zero mercy.":
+    Color: #7a6e90, font-size 17px, weight 400, italic
+    Margin: 12px below title
+
+- Instruction cards:
+    LEFT card:
+      Background: #ede0f5  border: 1.5px solid #c8b4d8
+      Key icons: rounded squares, bg #c084b8, text white, 
+                 font-weight 700, padding 6px 10px
+    RIGHT card:
+      Background: #dff2e8  border: 1.5px solid #a8d4bc
+      Key icons: rounded squares, bg #6bac8a, text white,
+                 font-weight 700, padding 6px 10px
+    Both cards: border-radius 16px, padding 24px,
+                box-shadow: 0 4px 16px rgba(0,0,0,0.07)
+
+- "PRESS SPACE TO START" text:
+    Color: #9a8aac, font-size 15px, weight 600,
+    letter-spacing 0.12em, all-caps
+    Pulsing opacity animation: 0.4 → 1.0 → 0.4 over 2s ease-in-out
+
+COUNTDOWN OVERLAY
+──────────────────────────────────────────────
+- Overlay background: rgba(245, 240, 252, 0.55), 
+  backdrop-filter: blur(4px)
+- Countdown numbers:
+    "3" — #c084b8  (dusty rose)
+    "2" — #6bac8a  (sage green)
+    "1" — #a0b4d8  (powder blue)
+    "GO!" — #d4a96a (warm sand)
+    Font-size: 96px, weight 800
+    Scale animation: from 0.6 → 1.0 with ease-out over 300ms
+
+LEVEL-UP NOTIFICATION
+──────────────────────────────────────────────
+- Text "LEVEL X":
+    Color: #7a6e90, font-size 22px, weight 700,
+    letter-spacing 0.1em
+- Dividing line briefly shifts to #c9bfe0 for 600ms
+- No flash. Fade-in over 200ms, hold 700ms, fade-out 300ms.
+
+DEATH SCREEN
+──────────────────────────────────────────────
+- Overlay: rgba(240, 235, 248, 0.82), backdrop-filter blur(6px)
+- Death panel card:
+    Background: #faf7ff
+    Border: 1.5px solid #ddd4ec
+    Border-radius: 20px
+    Box-shadow: 0 8px 32px rgba(140, 120, 180, 0.12)
+    Padding: 36px 48px
+
+- "LEFT GOT YOU" — #c084b8  font-size 28px weight 800
+  "RIGHT GOT YOU" — #6bac8a font-size 28px weight 800
+  Subtitle below: "Better luck next time" — #9a8aac, font-size 14px
+
+- Stat cards (Time / Score / Level):
+    Background: #f0ebfa
+    Border: 1px solid #ddd0ee
+    Border-radius: 12px
+    Stat value: #4a4260, font-size 28px, weight 800
+    Stat label: #9a8aac, font-size 12px, weight 600, letter-spacing 0.08em
+
+- "NEW BEST!" badge:
+    Background: #f5e6c0
+    Border: 1.5px solid #e0c878
+    Color: #8a6e20
+    Font-size: 13px, weight 700, letter-spacing 0.1em
+    Border-radius: 20px, padding 4px 14px
+    Pulsing: scale 1.0 → 1.05 → 1.0 over 1s
+
+- "TRY AGAIN" button:
+    Background: #c084b8
+    Color: white, border-radius: 50px
+    Padding: 12px 36px, font-size 15px, weight 700
+    Hover: background #a86ca0, transition 200ms
+    Box-shadow: 0 4px 12px rgba(192, 132, 184, 0.35)
+
+- "EXIT" button:
+    Background: transparent
+    Border: 1.5px solid #c8b4d8
+    Color: #9a8aac, border-radius: 50px
+    Padding: 12px 36px, font-size 15px, weight 600
+    Hover: background #f0ebfa, transition 200ms
+
+GENERAL RULES FOR THE PASTEL STYLE
+──────────────────────────────────────────────
+1. No pure white (#ffffff) or pure black (#000000) anywhere.
+2. No harsh drop shadows — all shadows use low opacity
+   rgba values (max 0.15) with large blur radii.
+3. No neon or saturated colors anywhere — if a color feels
+   too vivid, desaturate it by 20%.
+4. Border-radius everywhere — minimum 8px on any card or
+   button. Nothing should have sharp corners.
+5. Transitions on all interactive elements: 200ms ease.
+6. If adding any new UI elements not covered above,
+   follow this palette:
+     Primary accent:   #c084b8  (dusty rose-purple)
+     Secondary accent: #6bac8a  (sage green)
+     Neutral text:     #4a4260  (dark muted purple)
+     Muted text:       #9a8aac  (light muted purple)
+     Card background:  #faf7ff  (near-white lavender)
+     Border color:     #ddd4ec  (soft lavender grey)

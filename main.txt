@@ -1,0 +1,194 @@
+Build a complete, single-file browser game called "Dual Brain" as index.html.
+No frameworks, no build steps, no dependencies except a CDN-loaded library
+if needed. Must run by opening index.html directly in a browser.
+
+═══════════════════════════════════════════════
+CONCEPT
+═══════════════════════════════════════════════
+Two shapes exist simultaneously on a split screen.
+- LEFT HALF: a square controlled by the LEFT (←) and RIGHT (→) arrow keys.
+  It moves horizontally only, sliding along the bottom of the left panel.
+- RIGHT HALF: a circle controlled by the UP (↑) and DOWN (↓) arrow keys.
+  It moves vertically only, sliding along the center-right of the right panel.
+
+Both shapes face their own independent stream of obstacles falling/moving
+toward them. If EITHER shape gets hit, the round ends. The player must
+keep BOTH alive simultaneously — the entire challenge is divided attention.
+
+═══════════════════════════════════════════════
+LAYOUT
+═══════════════════════════════════════════════
+- Full viewport canvas, no scrollbars.
+- A single vertical dividing line splits the screen exactly in half.
+- LEFT panel background: deep navy (#0f0f2e)
+- RIGHT panel background: dark teal (#0e2e2e)
+- Dividing line: glowing white, 2px, with a subtle CSS blur glow effect.
+- TOP BAR: centered above both panels, shows:
+    - Current score (increments every second survived)
+    - Best score (persisted in localStorage)
+    - Current level (increases every 15 seconds)
+- Small label at bottom of left panel: "← →" in muted text
+- Small label at bottom of right panel: "↑ ↓" in muted text
+
+═══════════════════════════════════════════════
+LEFT PANEL — THE SQUARE
+═══════════════════════════════════════════════
+- Player is a glowing SQUARE (30x30px), hot pink (#ff2d78), sitting near
+  the bottom of the left panel with ~60px margin from the bottom edge.
+- Moves LEFT or RIGHT by 18px per keypress. Smooth via lerp (lerp factor
+  0.18). Clamped to stay within the left panel boundaries.
+- Obstacles are VERTICAL BARS that spawn at the top of the left panel and
+  fall downward. They are full-width gaps — meaning each obstacle is
+  actually two rectangles leaving a GAP in the middle that the square must
+  pass through. Gap width starts at 160px and shrinks by 4px every level.
+- Obstacle color: electric blue (#3af), semi-transparent (opacity 0.85).
+- Obstacle fall speed starts at 2.5px/frame, increases by 0.4px per level.
+- New obstacle spawns every 1800ms, decreasing by 80ms per level
+  (minimum 600ms).
+- On collision: the square flashes red and the game ends.
+
+═══════════════════════════════════════════════
+RIGHT PANEL — THE CIRCLE
+═══════════════════════════════════════════════
+- Player is a glowing CIRCLE (radius 16px), lime green (#39ff14),
+  positioned horizontally centered in the right panel, near the vertical
+  middle, free to move up and down.
+- Moves UP or DOWN by 18px per keypress. Smooth via lerp (lerp factor
+  0.18). Clamped to stay within the right panel boundaries.
+- Obstacles are HORIZONTAL BARS that spawn on the RIGHT edge of the right
+  panel and travel LEFT toward the circle. Same gap mechanic — two
+  rectangles with a gap the circle must align with. Gap height starts at
+  160px and shrinks by 4px every level.
+- Obstacle color: orange (#ff8c00), semi-transparent (opacity 0.85).
+- Obstacle travel speed starts at 2.5px/frame, increases by 0.4px per
+  level.
+- New obstacle spawns every 1800ms on the same schedule as the left panel
+  but with an 900ms offset so the two sides are intentionally out of phase
+  — forcing the player to react to both sides alternately.
+- On collision: the circle flashes red and the game ends.
+
+═══════════════════════════════════════════════
+OBSTACLE DESIGN DETAIL
+═══════════════════════════════════════════════
+- Each obstacle has a randomized gap POSITION (not just centered) so the
+  player cannot memorize a fixed path.
+- Gap position is constrained so it never spawns within 40px of either
+  edge (always reachable).
+- Draw a subtle directional arrow INSIDE the gap pointing toward the
+  player's shape, so players have a visual cue of where the safe zone is.
+  Arrow color: white, opacity 0.4.
+- Obstacles that have passed the player shape are removed from the array
+  to keep memory clean.
+
+═══════════════════════════════════════════════
+PARTICLE EFFECTS
+═══════════════════════════════════════════════
+- When the square successfully passes through a gap: emit 6 small pink
+  sparks that fly outward and fade over 400ms.
+- When the circle successfully passes through a gap: emit 6 small green
+  sparks.
+- On death: emit 20 particles in the dead shape's color that explode
+  outward from its position.
+- Particles are simple circles drawn on canvas, no library needed.
+
+═══════════════════════════════════════════════
+GAME STATES
+═══════════════════════════════════════════════
+
+1. START SCREEN
+   - Title: "DUAL BRAIN" in large bold font, split-colored:
+     "DUAL" in hot pink, "BRAIN" in lime green.
+   - Subtitle: "One mind. Two problems. Zero mercy."
+   - Two side-by-side instruction cards:
+     LEFT card (navy bg): shows ← → arrow keys, label "Controls LEFT"
+     RIGHT card (teal bg): shows ↑ ↓ arrow keys, label "Controls RIGHT"
+   - Large "PRESS SPACE TO START" button, pulsing opacity animation.
+   - Best score shown if > 0: "Best: Xs"
+
+2. COUNTDOWN (after space pressed)
+   - Both panels visible with shapes in starting position.
+   - Center overlay counts down: "3" → "2" → "1" → "GO!" 
+   - Each number appears with a scale-up animation (CSS or JS).
+   - 800ms between each number.
+
+3. GAMEPLAY
+   - Score timer runs. Level label updates.
+   - Every level transition: brief flash on the dividing line + text
+     "LEVEL X" appears center screen for 1 second then fades.
+
+4. DEATH SCREEN
+   - Both panels blur slightly (CSS filter: blur(3px) on canvas, or
+     overlay a semi-transparent layer).
+   - Overlay panel center screen shows:
+       - Which side killed you: "LEFT GOT YOU" or "RIGHT GOT YOU"
+         in that side's color.
+       - Three stat cards:
+           ⏱ Time survived (Xs)
+           🏆 Score
+           📈 Level reached
+       - If new best: "NEW BEST!" badge in gold, pulsing.
+   - Two buttons: "TRY AGAIN" (filled, colored) and "EXIT" (outline).
+   - Press Space to retry, Escape to go to start screen.
+
+═══════════════════════════════════════════════
+VISUAL STYLE
+═══════════════════════════════════════════════
+- Font: Import "Space Grotesk" from Google Fonts. Fallback: system-ui.
+- All player shapes have a glow effect: use Canvas shadowBlur (value: 20)
+  with shadowColor matching the shape color.
+- Obstacles also have a subtle glow (shadowBlur: 8).
+- Background of each panel has very faint moving dots (10 dots per panel,
+  drifting slowly, opacity 0.06) to add depth without distraction.
+- Dividing line pulses brighter briefly on each level up.
+- The top score bar has a frosted glass look: semi-transparent dark bg,
+  subtle border, backdrop-filter blur if supported.
+
+═══════════════════════════════════════════════
+DIFFICULTY SCALING (per level, level up every 15s)
+═══════════════════════════════════════════════
+Level 1:  speed 2.5, gap 160px, spawn 1800ms
+Level 2:  speed 2.9, gap 156px, spawn 1720ms
+Level 3:  speed 3.3, gap 152px, spawn 1640ms
+Level 4:  speed 3.7, gap 148px, spawn 1560ms
+Level 5+: continue the same progression, min gap 80px, min spawn 600ms
+
+═══════════════════════════════════════════════
+AUDIO (optional but include if straightforward)
+═══════════════════════════════════════════════
+Use the Web Audio API (no external files). Generate:
+- A short percussive "whoosh" tone when passing through a gap
+  (oscillator, quick attack/decay, ~80ms).
+- A low "thud" on death (oscillator, lower frequency, ~200ms).
+- A brief ascending 3-note chime on level up.
+If Web Audio adds significant complexity, skip it and leave a clear
+TODO comment instead.
+
+═══════════════════════════════════════════════
+CODE QUALITY
+═══════════════════════════════════════════════
+- Single index.html file. All CSS in <style>, all JS in <script>.
+- Organize JS into clearly named sections with comment headers:
+  CONFIG, STATE, ENTITIES, INPUT, PHYSICS, RENDERING, AUDIO, UI, LOOP.
+- CONFIG object at the top with all magic numbers so tuning is easy.
+- requestAnimationFrame game loop with delta time so speed is
+  frame-rate independent.
+- No jQuery, no React. Vanilla JS only.
+- localStorage for best score persistence.
+- Must work on Chrome, Firefox, and Safari latest versions.
+- Responsive: if viewport width < 600px, show a "Play on desktop
+  for the best experience" message instead of the game (mobile graceful
+  degradation).
+
+═══════════════════════════════════════════════
+DELIVERABLE
+═══════════════════════════════════════════════
+Output a single index.html file that is complete and immediately playable.
+Test the logic mentally before outputting — ensure:
+- Obstacles are removed after passing the player to avoid memory leaks.
+- Key held down moves smoothly (use keydown with a held-keys Set, not
+  repeated keydown events).
+- Death cannot trigger twice in the same frame.
+- Score and best score display correctly on the death screen.
+- Canvas resizes correctly if the browser window is resized mid-game
+  (add a resize event listener that resets canvas dimensions and
+  repositions shapes proportionally).
